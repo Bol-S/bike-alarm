@@ -29,7 +29,7 @@ int relayPin = 3; // Pin to activate/deactivate the relay that blows the alarm.
 boolean armed = false;  // Is the alarm armed or not.
 boolean triggered = false;  // Has the alarm been triggered or not.
 long triggeredAt; // Millis when alarm was triggered.
-long maxLapse; // Millis that the alarm is going to be beeping. Setted when alarm blows.
+long maxLapse; // Millis until the alarm is going to be beeping. Setted when alarm blows.
 long cooldown; // Millis until alarm blows again once it was muted if conditions are met again. Setted when maxLapse has passed.
 
 void setup()
@@ -141,11 +141,5 @@ void toggleAlarm(){
 }
 
 boolean checkElapsedTime(){
-  Serial.println("checkElapsedTime()");
-  Serial.print(millis());
-  Serial.print(" - ");
-  Serial.print(triggeredAt);
-  Serial.print(" > ");
-  Serial.println(maxLapse);
   return (millis() - triggeredAt > maxLapse);
 }
