@@ -25,9 +25,12 @@ MFRC522 mfrc522(SS_PIN, RST_PIN); // Create RC522 object
 /** //RC522 **/
 
 
-int relayPin = 3; // Pin to activate/deactivate the relay that blows the alarm
-boolean armed = false;  // Is the alarm armed or not 
+int relayPin = 3; // Pin to activate/deactivate the relay that blows the alarm.
+boolean armed = false;  // Is the alarm armed or not.
 boolean triggered = false;  // Has the alarm been triggered or not
+long triggeredAt; // Millis when alarm was triggered.
+long maxLapse; // Millis that the alarm is going to be beeping. Setted when alarm blows.
+long cooldown; // Millis until alarm blows again once it was muted if conditions are met again. Setted when maxLapse has passed.
 
 void setup()
 {
@@ -39,8 +42,13 @@ void setup()
 }
 void loop()
 {
-  if(triggered){  // In case the alarm is triggered
-    if(readRFID()){ // Check if card is present to disarm the alarm
+  if(triggered){  // In case the alarm is triggered    
+    if(checkElapsedTime()){ // Check if maxLapse has already passed. Doesn't disarm the alarm, just mutes it.
+      digitalWrite(relayPin, LOW);
+      triggered = false;
+      cooldown = millis() + 10000; // We add 10 seconds of cooldown until alarm blows again if conditions are met.
+    }
+    else if(readRFID()){ // Check if card is present to disarm the alarm
       digitalWrite(relayPin, LOW);
       delay(200);
       toggleAlarm();
@@ -91,8 +99,10 @@ void loop()
   }
   else{
     if(armed){  // Check if alarm is armed
-      if(compareStoredAngles())  // Check for any tilt to trigger the alarm
+      if((millis() > cooldown) && compareStoredAngles()){  // Check for any tilt to trigger the alarm
+        maxLapse = millis() + 30000;
         triggered = true;
+      }
       else
         delay(1000);
     }
@@ -128,4 +138,14 @@ void toggleAlarm(){
     delay(50);
     digitalWrite(relayPin, LOW);
   }
+}
+
+boolean checkElapsedTime(){
+  Serial.println("checkElapsedTime()");
+  Serial.print(millis());
+  Serial.print(" - ");
+  Serial.print(triggeredAt);
+  Serial.print(" > ");
+  Serial.println(maxLapse);
+  return (millis() - triggeredAt > maxLapse);
 }
