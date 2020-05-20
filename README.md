@@ -20,6 +20,8 @@ Optional hardware:
 
 ### Wiring
 
+![schematics](https://github.com/Bol-S/bike-alarm/blob/develop/img/schematics.jpg)
+
 | MPU6050 | Arduino |
 |-|-|
 |VCC|+5V |
