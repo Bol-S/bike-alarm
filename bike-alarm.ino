@@ -1,9 +1,3 @@
-/**
- * ******** TODO **********
- * - Set alarm armed by default on startup.
- */
-
-
 /** MPU6050 **/
 #include<Wire.h>
 
@@ -43,7 +37,7 @@ void setup()
   initializeRC522();
   initializeMPU6050();
   pinMode(relayPin,OUTPUT);
-  
+  toggleAlarm();
 }
 void loop()
 {
