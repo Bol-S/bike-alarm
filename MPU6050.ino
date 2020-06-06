@@ -24,12 +24,24 @@ void readAngles(double anglesArray[]){
   int xAng = map(AcX,minVal,maxVal,-90,90);
   int yAng = map(AcY,minVal,maxVal,-90,90);
   int zAng = map(AcZ,minVal,maxVal,-90,90);
-
+  
   anglesArray[0] = RAD_TO_DEG * (atan2(-yAng, -zAng)+PI);
   anglesArray[1] = RAD_TO_DEG * (atan2(-xAng, -zAng)+PI);
   anglesArray[2] = RAD_TO_DEG * (atan2(-yAng, -xAng)+PI);
-  printArmedAngles();
-  printAngles();
+
+
+  // When MPU6050 has some power problem or resets or bricks, it gives 225 for all the angles.
+  // We detect if it has bricked, and re-initialize it.
+  if(round(anglesArray[0]) == 225 && round(anglesArray[1]) == 225 && round(anglesArray[2]) == 225){
+    initializeMPU6050();
+    delay(1000);  // We wait 1 second before call this same function to read the angles once MPU has re-initialized
+    readAngles(anglesArray);  // We call this function again to read the real angles, otherwise alarm would blow with the fake 225 angles read.
+  }
+
+  if(false){
+    printArmedAngles();
+    printAngles();
+  }
   
 }
 
@@ -72,32 +84,8 @@ void printArmedAngles(){
 boolean compareStoredAngles(){
   readAngles(angles); // Update current angles information from gyroscope
 
-  float xDiff = diffBetweenTwoAngles(armedAngles[0], angles[0]);
-  if(xDiff > xThreshold){
-    Serial.print("X TRIGGERED: ");
-    Serial.println(xDiff);
-    Serial.println("-----------------------------------------");
-    return true;
-  }
-
-  float yDiff = diffBetweenTwoAngles(armedAngles[1], angles[1]);
-  if(yDiff > yThreshold){
-    Serial.print("Y TRIGGERED: ");
-    Serial.println(yDiff);
-    Serial.println("-----------------------------------------");
-    return true;
-  }
-  
-  /* //Currently disabled because is too sensitive for our purpose
-  float zDiff = diffBetweenTwoAngles(armedAngles[2], angles[2]); 
-  if(zDiff > zThreshold){
-    Serial.print("Z TRIGGERED: ");
-    Serial.println(zDiff);
-    Serial.println("-----------------------------------------");
-    return true;
-  }*/
-
-  return false;
+  return ((diffBetweenTwoAngles(armedAngles[0], angles[0]) > xThreshold) || 
+          (diffBetweenTwoAngles(armedAngles[1], angles[1]) > yThreshold));
 }
 
 /*
