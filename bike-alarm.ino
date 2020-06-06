@@ -1,3 +1,9 @@
+/**
+ * ******** TODO **********
+ * - Set alarm armed by default on startup.
+ */
+
+
 /** MPU6050 **/
 #include<Wire.h>
 
@@ -121,14 +127,13 @@ void loop()
 void toggleAlarm(){
   armed = !armed;
   if(armed){
-    Serial.println("ARMED");
     readAngles(armedAngles);
+
     digitalWrite(relayPin, HIGH);
     delay(250);
     digitalWrite(relayPin, LOW);
   }
   else{
-    Serial.println("DISARMED");
     digitalWrite(relayPin, HIGH);
     delay(50);
     digitalWrite(relayPin, LOW);

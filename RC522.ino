@@ -13,18 +13,13 @@ void initializeRC522() {
 /*
  * Performs a lecture of card in range (if any) and compares it to the authorized ones.
  */
-boolean readRFID() {     
+boolean readRFID() {   
+  long t = millis(); 
   if (mfrc522.PICC_IsNewCardPresent()) {  // Check if new card is in range
-    
     if (mfrc522.PICC_ReadCardSerial()){ // Read the card
-      
-        Serial.print(F("Card UID:"));
-        for (byte i = 0; i < mfrc522.uid.size; i++) {
-            Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-            Serial.print(mfrc522.uid.uidByte[i], HEX);   
-            readUID[i]=mfrc522.uid.uidByte[i];          
-        } 
-        Serial.println("     ");    
+          for (byte i = 0; i < mfrc522.uid.size; i++) {
+              readUID[i]=mfrc522.uid.uidByte[i];          
+          } 
         
         //Compare card in range to authorized cards
         if(compareArray(readUID, sizeof(readUID),CARD_1, sizeof(CARD_1)) ||
@@ -36,6 +31,12 @@ boolean readRFID() {
         mfrc522.PICC_HaltA();
         mfrc522.PCD_StopCrypto1();
     }
+  }
+
+
+  // If reading time is not between 20-30ms, RC522 has bricked. Needs to be re-initialized.
+  if(millis() - t > 50 || millis() - t < 10){
+    initializeRC522();
   }
 return false;
 }
